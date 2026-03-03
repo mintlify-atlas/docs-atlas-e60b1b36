@@ -1,0 +1,136 @@
+---
+title: 'Unprotected current session'
+api: 'GET /api/sessions/unprotectedCurrent'
+description: 'Retrieve current session information from unprotected cookie (development/testing only)'
+---
+
+<Warning>
+This endpoint is intended for development and testing purposes only. It returns the full user object stored in the JWT token, including sensitive information like the password hash. Do not use in production.
+</Warning>
+
+This endpoint retrieves and verifies the current user session from the `unprotectedCookie` JWT token.
+
+## Authentication
+
+This endpoint requires the `unprotectedCookie` to be present in the request. You must first authenticate using the [`/unprotectedLogin`](/api/authentication/unprotected-login) endpoint.
+
+## Response
+
+<ResponseField name="status" type="string">
+  Status of the operation ("success")
+</ResponseField>
+
+<ResponseField name="payload" type="object">
+  The complete user object stored in the JWT token
+  
+  <Expandable title="payload properties">
+    <ResponseField name="_id" type="string">
+      User's unique identifier
+    </ResponseField>
+    
+    <ResponseField name="first_name" type="string">
+      User's first name
+    </ResponseField>
+    
+    <ResponseField name="last_name" type="string">
+      User's last name
+    </ResponseField>
+    
+    <ResponseField name="email" type="string">
+      User's email address
+    </ResponseField>
+    
+    <ResponseField name="password" type="string">
+      Bcrypt hashed password (should not be exposed in production)
+    </ResponseField>
+    
+    <ResponseField name="role" type="string">
+      User's role (default: "user")
+    </ResponseField>
+    
+    <ResponseField name="pets" type="array">
+      Array of pet IDs owned by the user
+    </ResponseField>
+    
+    <ResponseField name="iat" type="number">
+      JWT issued at timestamp
+    </ResponseField>
+    
+    <ResponseField name="exp" type="number">
+      JWT expiration timestamp (1 hour from issue)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<CodeGroup>
+```bash cURL with cookie
+curl -X GET http://localhost:8080/api/sessions/unprotectedCurrent \
+  -H "Cookie: unprotectedCookie=YOUR_JWT_TOKEN"
+```
+
+```bash cURL with cookies file
+curl -X GET http://localhost:8080/api/sessions/unprotectedCurrent \
+  -b cookies.txt
+```
+
+```javascript JavaScript
+const response = await fetch('http://localhost:8080/api/sessions/unprotectedCurrent', {
+  method: 'GET',
+  credentials: 'include'
+});
+
+const data = await response.json();
+console.log(data.payload);
+```
+</CodeGroup>
+
+## Response Examples
+
+### Success Response (200)
+
+```json
+{
+  "status": "success",
+  "payload": {
+    "_id": "507f1f77bcf86cd799439011",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john.doe@example.com",
+    "password": "$2b$10$abcdefghijklmnopqrstuvwxyz123456789",
+    "role": "user",
+    "pets": [
+      {
+        "_id": "507f191e810c19729de860ea"
+      }
+    ],
+    "iat": 1699564800,
+    "exp": 1699568400
+  }
+}
+```
+
+### Error Response (500)
+
+**Invalid or expired token:**
+```
+Ha ocurrido un error en la petición, por favor ver detalle: [error details]
+```
+
+<Note>
+The token expires after 1 hour. After expiration, you'll need to authenticate again using `/unprotectedLogin`.
+</Note>
+
+## Differences from `/current`
+
+| Feature | `/current` (Protected) | `/unprotectedCurrent` |
+|---------|----------------------|----------------------|
+| Cookie name | `coderCookie` | `unprotectedCookie` |
+| Payload content | UserDTO only (name, role, email) | Full user object with password |
+| Security | High | Low (exposes password hash) |
+| Use case | Production | Development/Testing |
+
+## Implementation Details
+
+This endpoint verifies the JWT token stored in the `unprotectedCookie` and returns the complete payload. Unlike the protected `/current` endpoint, this includes all user data from the database, including the hashed password.
+
+Source: `src/controllers/sessions.controller.js:69-78`

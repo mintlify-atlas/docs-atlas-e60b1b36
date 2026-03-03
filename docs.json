@@ -57,7 +57,9 @@
             "pages": [
               "api/authentication/register",
               "api/authentication/login",
-              "api/authentication/current-session"
+              "api/authentication/current-session",
+              "api/authentication/unprotected-login",
+              "api/authentication/unprotected-current"
             ]
           },
           {
