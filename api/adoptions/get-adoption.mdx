@@ -1,0 +1,116 @@
+---
+title: 'Get Adoption'
+api: 'GET /api/adoptions/:aid'
+description: 'Retrieve a specific adoption by ID'
+---
+
+## Overview
+
+This endpoint retrieves a single adoption record by its unique identifier. The adoption contains information about the relationship between a user (owner) and their adopted pet.
+
+## Endpoint
+
+```
+GET /api/adoptions/:aid
+```
+
+## Path Parameters
+
+<ParamField path="aid" type="string" required>
+  The unique identifier of the adoption record to retrieve.
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string" required>
+  Status of the response. Returns "success" when adoption is found.
+</ResponseField>
+
+<ResponseField name="payload" type="object" required>
+  The adoption object.
+  
+  <ResponseField name="_id" type="string">
+    Unique identifier for the adoption record.
+  </ResponseField>
+  
+  <ResponseField name="owner" type="string | object">
+    Reference to the user who adopted the pet (ObjectId). May be populated with full user object including name, email, and pets array.
+  </ResponseField>
+  
+  <ResponseField name="pet" type="string | object">
+    Reference to the adopted pet (ObjectId). May be populated with full pet object including name, specie, birthDate, and adoption status.
+  </ResponseField>
+</ResponseField>
+
+## Example Request
+
+<CodeGroup>
+
+```bash cURL
+curl --location 'http://localhost:8080/api/adoptions/507f1f77bcf86cd799439011' \
+--header 'Content-Type: application/json'
+```
+
+```javascript JavaScript
+const adoptionId = '507f1f77bcf86cd799439011';
+
+fetch(`http://localhost:8080/api/adoptions/${adoptionId}`, {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+```python Python
+import requests
+
+adoption_id = "507f1f77bcf86cd799439011"
+url = f"http://localhost:8080/api/adoptions/{adoption_id}"
+headers = {"Content-Type": "application/json"}
+
+response = requests.get(url, headers=headers)
+print(response.json())
+```
+
+</CodeGroup>
+
+## Example Response
+
+### Success Response
+
+```json
+{
+  "status": "success",
+  "payload": {
+    "_id": "507f1f77bcf86cd799439011",
+    "owner": "507f191e810c19729de860ea",
+    "pet": "507f191e810c19729de860eb"
+  }
+}
+```
+
+## Error Responses
+
+### 404 Not Found
+
+Returned when the adoption with the specified ID does not exist.
+
+```json
+{
+  "status": "error",
+  "error": "Adoption not found"
+}
+```
+
+### 500 Internal Server Error
+
+Returned when a server error occurs during the request.
+
+```json
+{
+  "message": "Ha ocurrido un error en la petición, por favor ver detalle: [error details]"
+}
+```

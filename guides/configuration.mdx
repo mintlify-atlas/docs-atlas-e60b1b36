@@ -1,0 +1,92 @@
+---
+title: 'Configuration'
+description: 'Configure environment variables and MongoDB connection for the Adoptme API'
+icon: 'gear'
+---
+
+## Environment Variables
+
+The Adoptme API uses environment variables for configuration. These variables are loaded using the `dotenv` package and managed through a central configuration file.
+
+### Required Variables
+
+Create a `.env` file in the root directory of your project with the following variables:
+
+```bash .env
+PORT=8080
+MONGO_URL=mongodb://127.0.0.1:27017
+DB_NAME=adoptme
+```
+
+<Note>
+  All environment variables have default fallback values, but it's recommended to explicitly set them in production environments.
+</Note>
+
+### Configuration Details
+
+| Variable | Default Value | Description |
+|----------|--------------|-------------|
+| `PORT` | `8080` | The port number on which the API server will listen |
+| `MONGO_URL` | `mongodb://127.0.0.1:27017` | MongoDB connection URL |
+| `DB_NAME` | `adoptme` | Name of the MongoDB database |
+
+## Configuration File
+
+The configuration is centralized in the `config.js` file located at `src/config/config.js`:
+
+```javascript src/config/config.js
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+export default  {
+    PORT: process.env.PORT || 8080,
+    MONGO_URL: process.env.MONGO_URL || 'mongodb://127.0.0.1:27017',
+    DB_NAME: process.env.DB_NAME || 'adoptme'
+}
+```
+
+This configuration object is imported throughout the application to access environment variables consistently.
+
+## MongoDB Connection
+
+The API connects to MongoDB using the `MONGO_URL` and `DB_NAME` variables. The connection is established when the application starts.
+
+### Connection Configuration
+
+```javascript
+import mongoose from 'mongoose';
+import config from './config/config.js';
+
+await mongoose.connect(config.MONGO_URL, { dbName: config.DB_NAME });
+```
+
+<Warning>
+  Ensure MongoDB is running and accessible at the specified `MONGO_URL` before starting the application. The API requires a successful database connection to function properly.
+</Warning>
+
+## Docker Environment Variables
+
+When running the application in Docker, you must pass the environment variables to the container:
+
+```bash
+PORT=3000
+MONGO_URL=mongodb://your-mongo-host:27017
+DB_NAME=adoptme
+```
+
+<Note>
+  The `MONGO_URL` and `DB_NAME` variables are critical for Docker deployments. If not provided, the application will fail to start as it requires a database connection at initialization.
+</Note>
+
+## Usage in Application
+
+Import the configuration object wherever you need access to environment variables:
+
+```javascript
+import config from './config/config.js';
+
+const server = app.listen(config.PORT, () => {
+    console.log(`Server running on port ${config.PORT}`);
+});
+```

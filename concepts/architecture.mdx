@@ -1,0 +1,192 @@
+---
+title: Architecture
+description: Understanding the layered architecture of the Adoptme API
+---
+
+The Adoptme API follows a clean, layered architecture pattern that separates concerns and promotes maintainability. The application is built on Node.js with Express and MongoDB.
+
+## Application structure
+
+The application is organized into the following layers:
+
+```
+src/
+├── app.js              # Application entry point
+├── config/             # Configuration files
+├── controllers/        # Request handlers
+├── dao/                # Data Access Objects
+│   └── models/        # MongoDB schemas
+├── dto/                # Data Transfer Objects
+├── repository/         # Repository pattern implementation
+├── routes/             # Express route definitions
+├── services/           # Service layer
+└── utils/              # Utility functions
+```
+
+## Express server
+
+The Express application is initialized in `app.js` and includes:
+
+```javascript
+import express from 'express';
+import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
+
+const app = express();
+
+// MongoDB connection
+mongoose.connect(config.MONGO_URL, {dbName: config.DB_NAME})
+  .then(() => console.log("Connection successful MongoDB"))
+  .catch((err) => {
+    console.error({ error: err })
+    process.exit(1)
+  })
+
+// Middleware
+app.use(express.json());
+app.use(cookieParser());
+
+// Routes
+app.use('/api/users', usersRouter);
+app.use('/api/pets', petsRouter);
+app.use('/api/adoptions', adoptionsRouter);
+app.use('/api/sessions', sessionsRouter);
+```
+
+### Key features
+
+- **Database**: MongoDB with Mongoose ODM
+- **Middleware**: JSON parsing and cookie handling
+- **API documentation**: Swagger UI at `/docs` endpoint
+- **Route organization**: Modular routers for each resource
+
+## Layered architecture
+
+### 1. Routes layer
+
+Routes define the API endpoints and map them to controller methods. Each resource has its own router file.
+
+**Example** (`routes/users.router.js`):
+
+```javascript
+import { Router } from 'express';
+import usersController from '../controllers/users.controller.js';
+
+const router = Router();
+
+router.get('/', usersController.getAllUsers);
+router.get('/:uid', usersController.getUser);
+router.put('/:uid', usersController.updateUser);
+router.delete('/:uid', usersController.deleteUser);
+
+export default router;
+```
+
+### 2. Controllers layer
+
+Controllers handle HTTP requests, validate input, call service methods, and format responses. They contain the business logic for request handling.
+
+**Example** (`controllers/users.controller.js`):
+
+```javascript
+import { usersService } from "../services/index.js"
+
+const getAllUsers = async(req, res) => {
+  try {
+    const users = await usersService.getAll();
+    res.send({status: "success", payload: users})
+  } catch (error) {
+    res.status(500).send("Ha ocurrido un error en la petición")
+  }
+}
+```
+
+### 3. Service layer
+
+The service layer acts as a central point for business logic and coordinates between repositories. Services are initialized with their respective DAOs.
+
+**Example** (`services/index.js`):
+
+```javascript
+import Users from "../dao/Users.dao.js";
+import UserRepository from "../repository/UserRepository.js";
+
+export const usersService = new UserRepository(new Users());
+export const petsService = new PetRepository(new Pet());
+export const adoptionsService = new AdoptionRepository(new Adoption());
+```
+
+### 4. Repository pattern
+
+Repositories provide an abstraction layer over DAOs and implement common CRUD operations using a generic base class.
+
+**GenericRepository** (`repository/GenericRepository.js`):
+
+```javascript
+export default class GenericRepository {
+  constructor(dao) {
+    this.dao = dao;
+  }
+
+  getAll = (params) => this.dao.get(params);
+  getBy = (params) => this.dao.getBy(params);
+  create = (doc) => this.dao.save(doc);
+  update = (id, doc) => this.dao.update(id, doc);
+  delete = (id) => this.dao.delete(id);
+}
+```
+
+Each resource extends the `GenericRepository` and can add resource-specific methods.
+
+### 5. DAO layer
+
+Data Access Objects handle direct database operations using Mongoose models. Each DAO provides CRUD methods for its model.
+
+**Example** (`dao/Users.dao.js`):
+
+```javascript
+import userModel from "./models/User.js";
+
+export default class Users {
+  get = (params) => userModel.find(params);
+  getBy = (params) => userModel.findOne(params);
+  save = (doc) => userModel.create(doc);
+  update = (id, doc) => userModel.findByIdAndUpdate(id, {$set: doc});
+  delete = (id) => userModel.findByIdAndDelete(id);
+}
+```
+
+### 6. DTOs (Data Transfer Objects)
+
+DTOs transform data between layers and ensure only necessary data is exposed. They're particularly useful for token generation and API responses.
+
+**Example** (`dto/User.dto.js`):
+
+```javascript
+export default class UserDTO {
+  static getUserTokenFrom = (user) => ({
+    name: `${user.first_name} ${user.last_name}`,
+    role: user.role,
+    email: user.email
+  })
+}
+```
+
+## Data flow
+
+The typical request flow through the application:
+
+1. **Request** arrives at a route endpoint
+2. **Router** forwards to appropriate controller method
+3. **Controller** validates input and calls service
+4. **Service** coordinates business logic and calls repository
+5. **Repository** delegates to DAO
+6. **DAO** executes Mongoose operations on model
+7. **Response** travels back up through the layers
+
+This layered architecture provides:
+
+- **Separation of concerns**: Each layer has a specific responsibility
+- **Testability**: Layers can be tested independently
+- **Maintainability**: Changes are isolated to specific layers
+- **Scalability**: New features follow established patterns

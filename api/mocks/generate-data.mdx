@@ -1,0 +1,211 @@
+---
+title: 'Generate Mock Data'
+api: 'POST /api/mocks/generateData'
+description: 'Generate and insert mock users and pets into the database with random data using Faker.js'
+---
+
+This endpoint generates mock users and pets with realistic test data using Faker.js and inserts them directly into MongoDB. Generated pets can be randomly assigned to created users if they are marked as adopted.
+
+## Query Parameters
+
+<ParamField query="user" type="number" default="1">
+  Number of mock users to generate and insert into the database. Must be a positive integer.
+</ParamField>
+
+<ParamField query="pet" type="number" default="1">
+  Number of mock pets to generate and insert into the database. Must be a positive integer.
+</ParamField>
+
+## How It Works
+
+1. **Generate Users**: Creates the specified number of mock users with Faker.js data:
+   - Random first and last names
+   - Email addresses based on the generated names (@gmail.com)
+   - Hashed password (default: 'coder123')
+   - Random role ('user' or 'admin')
+   - Empty pets array
+
+2. **Insert Users**: Batch inserts all generated users into MongoDB
+
+3. **Generate Pets**: Creates the specified number of mock pets with:
+   - Random pet name
+   - Random animal species
+   - Random birthdate
+   - Random adoption status (boolean)
+   - Random avatar image
+
+4. **Handle Adoptions**: If a pet is generated with `adopted: true`, it's automatically assigned to a random user from the newly created users
+
+5. **Insert Pets**: Batch inserts all generated pets into MongoDB
+
+## Response
+
+<ResponseField name="message" type="string">
+  Success message confirming data generation
+</ResponseField>
+
+<ResponseField name="users" type="array">
+  Array of inserted user documents including MongoDB `_id` fields
+  
+  <ResponseField name="_id" type="string">
+    MongoDB document ID
+  </ResponseField>
+  
+  <ResponseField name="first_name" type="string">
+    User's first name
+  </ResponseField>
+  
+  <ResponseField name="last_name" type="string">
+    User's last name
+  </ResponseField>
+  
+  <ResponseField name="email" type="string">
+    User's email address
+  </ResponseField>
+  
+  <ResponseField name="password" type="string">
+    Hashed password
+  </ResponseField>
+  
+  <ResponseField name="role" type="string">
+    User role (user or admin)
+  </ResponseField>
+  
+  <ResponseField name="pets" type="array">
+    Array of pet IDs owned by this user
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="pets" type="array">
+  Array of inserted pet documents including MongoDB `_id` fields
+  
+  <ResponseField name="_id" type="string">
+    MongoDB document ID
+  </ResponseField>
+  
+  <ResponseField name="name" type="string">
+    Pet's name
+  </ResponseField>
+  
+  <ResponseField name="specie" type="string">
+    Animal species
+  </ResponseField>
+  
+  <ResponseField name="birthDate" type="string">
+    Pet's birth date
+  </ResponseField>
+  
+  <ResponseField name="adopted" type="boolean">
+    Whether the pet has been adopted
+  </ResponseField>
+  
+  <ResponseField name="owner" type="string">
+    User ID of the pet's owner (only present if adopted is true)
+  </ResponseField>
+  
+  <ResponseField name="image" type="string">
+    Avatar image URL
+  </ResponseField>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X POST "http://localhost:8080/api/mocks/generateData?user=10&pet=25" \
+  -H "Content-Type: application/json"
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'http://localhost:8080/api/mocks/generateData?user=10&pet=25',
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }
+);
+
+const data = await response.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'http://localhost:8080/api/mocks/generateData',
+    params={'user': 10, 'pet': 25}
+)
+
+data = response.json()
+print(data)
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 201 Success
+{
+  "message": "Datos generados exitosamente",
+  "users": [
+    {
+      "_id": "507f1f77bcf86cd799439011",
+      "first_name": "Carlos",
+      "last_name": "Martínez",
+      "email": "[email protected]",
+      "password": "$2b$10$...",
+      "role": "user",
+      "pets": []
+    }
+  ],
+  "pets": [
+    {
+      "_id": "507f1f77bcf86cd799439012",
+      "name": "Max",
+      "specie": "Dog",
+      "birthDate": "2020-05-15T00:00:00.000Z",
+      "adopted": true,
+      "owner": "507f1f77bcf86cd799439011",
+      "image": "https://avatars.githubusercontent.com/u/12345"
+    }
+  ]
+}
+```
+
+```json 400 Negative Values
+{
+  "error": "Cantidad enviada debe de ser positiva"
+}
+```
+
+```json 500 Server Error
+{
+  "error": "Error interno del servidor"
+}
+```
+
+</ResponseExample>
+
+## Error Cases
+
+- **400 Bad Request**: Returned when `user` or `pet` query parameters are negative values
+- **500 Internal Server Error**: Returned when database insertion fails or other server errors occur
+
+## Implementation Details
+
+This endpoint uses the **Faker.js** library (Spanish Mexico locale) to generate realistic test data:
+
+- **User data**: Generated by `generaUser()` function in `/workspace/source/src/mocks/mocks.js:29`
+- **Pet data**: Generated by `generaPet()` function in `/workspace/source/src/mocks/mocks.js:4`
+- **Database models**: Uses `userModel` and `petModel` for MongoDB operations
+- **Batch insertion**: Uses MongoDB's `insertMany()` for efficient bulk inserts
+- **Smart adoptions**: Adopted pets are randomly assigned to one of the newly created users
+
+## Use Cases
+
+- Populate development databases with test data
+- Generate data for integration testing
+- Create demo environments with realistic sample data
+- Performance testing with large datasets

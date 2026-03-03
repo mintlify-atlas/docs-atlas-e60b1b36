@@ -1,0 +1,107 @@
+---
+title: 'Get All Adoptions'
+api: 'GET /api/adoptions'
+description: 'Retrieve a list of all adoptions in the system'
+---
+
+## Overview
+
+This endpoint returns all adoption records from the system. Each adoption links a user (owner) with an adopted pet.
+
+## Endpoint
+
+```
+GET /api/adoptions
+```
+
+## Response
+
+<ResponseField name="status" type="string" required>
+  Status of the response. Returns "success" on successful request.
+</ResponseField>
+
+<ResponseField name="payload" type="array" required>
+  Array of adoption objects.
+  
+  <ResponseField name="_id" type="string">
+    Unique identifier for the adoption record.
+  </ResponseField>
+  
+  <ResponseField name="owner" type="string | object">
+    Reference to the user who adopted the pet. May be populated with full user object.
+  </ResponseField>
+  
+  <ResponseField name="pet" type="string | object">
+    Reference to the adopted pet. May be populated with full pet object.
+  </ResponseField>
+</ResponseField>
+
+## Example Request
+
+<CodeGroup>
+
+```bash cURL
+curl --location 'http://localhost:8080/api/adoptions' \
+--header 'Content-Type: application/json'
+```
+
+```javascript JavaScript
+fetch('http://localhost:8080/api/adoptions', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+```python Python
+import requests
+
+url = "http://localhost:8080/api/adoptions"
+headers = {"Content-Type": "application/json"}
+
+response = requests.get(url, headers=headers)
+print(response.json())
+```
+
+</CodeGroup>
+
+## Example Response
+
+```json
+{
+  "status": "success",
+  "payload": [
+    {
+      "_id": "507f1f77bcf86cd799439011",
+      "owner": "507f191e810c19729de860ea",
+      "pet": "507f191e810c19729de860eb"
+    },
+    {
+      "_id": "507f1f77bcf86cd799439012",
+      "owner": "507f191e810c19729de860ec",
+      "pet": "507f191e810c19729de860ed"
+    }
+  ]
+}
+```
+
+## Error Responses
+
+<ResponseField name="status" type="number">
+  HTTP status code
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Error message describing what went wrong
+</ResponseField>
+
+### 500 Internal Server Error
+
+```json
+{
+  "message": "Ha ocurrido un error en la petición, por favor ver detalle: [error details]"
+}
+```

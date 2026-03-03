@@ -1,0 +1,90 @@
+---
+title: "Current Session"
+description: "Get the current authenticated user's information"
+---
+
+## GET /api/sessions/current
+
+Verifies and returns the current user's session information by validating the JWT token stored in cookies.
+
+### Authentication
+
+This endpoint requires a valid JWT token to be present in the `coderCookie` cookie. The token is automatically sent by the browser if you previously logged in using the `/api/sessions/login` endpoint.
+
+<ParamField header="Cookie" type="string" required>
+  Must include `coderCookie` with a valid JWT token obtained from the login endpoint
+</ParamField>
+
+### Response
+
+<ResponseField name="status" type="string">
+  Status of the request ("success" or "error")
+</ResponseField>
+
+<ResponseField name="payload" type="object">
+  The decoded JWT token containing user information:
+  
+  <ResponseField name="payload.name" type="string">
+    User's full name
+  </ResponseField>
+  
+  <ResponseField name="payload.role" type="string">
+    User's role in the system
+  </ResponseField>
+  
+  <ResponseField name="payload.email" type="string">
+    User's email address
+  </ResponseField>
+  
+  <ResponseField name="payload.iat" type="number">
+    Token issued at timestamp (Unix epoch)
+  </ResponseField>
+  
+  <ResponseField name="payload.exp" type="number">
+    Token expiration timestamp (Unix epoch)
+  </ResponseField>
+</ResponseField>
+
+### Error Responses
+
+If the token is missing, invalid, or expired, the endpoint will return a 500 status with an error message.
+
+### Example Request
+
+```bash cURL
+curl -X GET https://api.adoptme.com/api/sessions/current \
+  -H "Cookie: coderCookie=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+Or with cookies file from login:
+
+```bash cURL
+curl -X GET https://api.adoptme.com/api/sessions/current \
+  -b cookies.txt
+```
+
+### Example Response
+
+```json Success (200)
+{
+  "status": "success",
+  "payload": {
+    "name": "John Doe",
+    "role": "user",
+    "email": "john.doe@example.com",
+    "iat": 1709481600,
+    "exp": 1709485200
+  }
+}
+```
+
+```json Error - Invalid/Missing Token (500)
+{
+  "status": "error",
+  "error": "Token verification failed"
+}
+```
+
+### Token Expiration
+
+JWT tokens expire after 1 hour. If your token has expired, you'll need to login again using the `/api/sessions/login` endpoint to obtain a new token.

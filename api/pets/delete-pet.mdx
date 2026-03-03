@@ -1,0 +1,56 @@
+---
+title: 'Delete Pet'
+api: 'DELETE /api/pets/:pid'
+description: 'Delete a pet from the system'
+---
+
+This endpoint deletes a pet from the database. This operation is permanent and cannot be undone.
+
+## Path Parameters
+
+<ParamField name="pid" type="string" required>
+  The unique identifier (ID) of the pet to delete
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string" required>
+  Status of the response. Returns "success" on successful deletion.
+</ResponseField>
+
+<ResponseField name="message" type="string" required>
+  Confirmation message. Returns "pet deleted".
+</ResponseField>
+
+## Example Request
+
+```bash cURL
+curl --request DELETE \
+  --url http://localhost:8080/api/pets/507f1f77bcf86cd799439011 \
+  --header 'Content-Type: application/json'
+```
+
+## Example Response
+
+```json
+{
+  "status": "success",
+  "message": "pet deleted"
+}
+```
+
+## Error Responses
+
+### Server Error (500)
+
+```json
+{
+  "error": "Ha ocurrido un error en la petición, por favor ver detalle: [error details]"
+}
+```
+
+## Notes
+
+- This operation is permanent and cannot be undone
+- The pet ID in the URL path must match an existing pet in the database
+- Associated data such as images are not automatically deleted from the file system

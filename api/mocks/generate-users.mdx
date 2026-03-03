@@ -1,0 +1,160 @@
+---
+title: 'Generate Mock Users'
+api: 'GET /api/mocks/mockingusers'
+description: 'Generate mock user data without inserting into the database'
+---
+
+This endpoint generates mock user data with realistic information using Faker.js but does NOT insert the data into the database. This is useful for testing, previewing mock data, or generating sample JSON responses.
+
+## Query Parameters
+
+<ParamField query="cantidad" type="number" default="1">
+  Number of mock users to generate. Must be a positive integer. If not provided, defaults to 1.
+</ParamField>
+
+## Response
+
+<ResponseField name="usuarios" type="array">
+  Array of generated mock user objects
+  
+  <ResponseField name="first_name" type="string">
+    User's first name (generated with Faker.js)
+  </ResponseField>
+  
+  <ResponseField name="last_name" type="string">
+    User's last name (generated with Faker.js)
+  </ResponseField>
+  
+  <ResponseField name="email" type="string">
+    User's email address, generated based on first and last name with @gmail.com domain
+  </ResponseField>
+  
+  <ResponseField name="password" type="string">
+    Hashed password (always 'coder123' hashed with bcrypt)
+  </ResponseField>
+  
+  <ResponseField name="role" type="string">
+    User role, randomly selected from 'user' or 'admin'
+  </ResponseField>
+  
+  <ResponseField name="pets" type="array">
+    Empty array of pets (no pets assigned to newly generated users)
+  </ResponseField>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "http://localhost:8080/api/mocks/mockingusers?cantidad=5"
+```
+
+```bash Single User (Default)
+curl -X GET "http://localhost:8080/api/mocks/mockingusers"
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'http://localhost:8080/api/mocks/mockingusers?cantidad=5'
+);
+
+const data = await response.json();
+console.log(data.usuarios);
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    'http://localhost:8080/api/mocks/mockingusers',
+    params={'cantidad': 5}
+)
+
+data = response.json()
+print(data['usuarios'])
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "usuarios": [
+    {
+      "first_name": "María",
+      "last_name": "García",
+      "email": "[email protected]",
+      "password": "$2b$10$N9qo8uLOickgx2ZMRZoMye.IjY8LhZ8D0L9F7G8x2Y5K6N8X9Z0Q2",
+      "role": "user",
+      "pets": []
+    },
+    {
+      "first_name": "Juan",
+      "last_name": "Rodríguez",
+      "email": "[email protected]",
+      "password": "$2b$10$N9qo8uLOickgx2ZMRZoMye.IjY8LhZ8D0L9F7G8x2Y5K6N8X9Z0Q2",
+      "role": "admin",
+      "pets": []
+    },
+    {
+      "first_name": "Ana",
+      "last_name": "López",
+      "email": "[email protected]",
+      "password": "$2b$10$N9qo8uLOickgx2ZMRZoMye.IjY8LhZ8D0L9F7G8x2Y5K6N8X9Z0Q2",
+      "role": "user",
+      "pets": []
+    }
+  ]
+}
+```
+
+```json 400 Negative Value
+{
+  "error": "Cantidad enviada debe de ser positiva"
+}
+```
+
+</ResponseExample>
+
+## Error Cases
+
+- **400 Bad Request**: Returned when the `cantidad` query parameter is a negative value
+
+## How It Works
+
+1. Accepts the `cantidad` query parameter (defaults to 1 if not provided)
+2. Validates that the quantity is not negative
+3. Generates the specified number of mock users using the `generaUser()` function
+4. Returns the array of generated users in JSON format
+5. **Does NOT insert** the data into MongoDB
+
+## Mock Data Generation
+
+This endpoint uses the **Faker.js** library with Spanish Mexico locale (`fakerES_MX`) to generate realistic user data:
+
+- **Names**: Realistic Spanish first and last names
+- **Email**: Generated based on first and last name with @gmail.com domain
+- **Password**: Always hashed version of 'coder123' using bcrypt
+- **Role**: Randomly selected between 'user' and 'admin'
+- **Pets**: Initialized as empty array
+
+The data generation is handled by the `generaUser()` function located in `/workspace/source/src/mocks/mocks.js:29`.
+
+## Use Cases
+
+- **Testing API clients**: Get sample JSON responses without affecting the database
+- **Preview mock data**: See what kind of data will be generated before inserting
+- **Documentation**: Generate example data for API documentation
+- **Frontend development**: Mock API responses for UI development
+- **Data structure validation**: Verify the structure of user objects
+
+## Comparison with Generate Data Endpoint
+
+| Feature | `/mockingusers` | `/generateData` |
+|---------|----------------|------------------|
+| HTTP Method | GET | POST |
+| Inserts to DB | No | Yes |
+| Generates Users | Yes | Yes |
+| Generates Pets | No | Yes |
+| Handles Adoptions | No | Yes |
+| Use Case | Preview/Testing | Database Population |

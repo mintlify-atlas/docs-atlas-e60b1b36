@@ -1,0 +1,438 @@
+---
+title: Installation
+description: Complete guide to installing and configuring the Adoptme API
+---
+
+## System requirements
+
+Before installing the Adoptme API, ensure your system meets these requirements:
+
+<CardGroup cols={2}>
+  <Card title="Node.js" icon="node-js">
+    **Version 22 or higher required**
+    
+    The Adoptme API requires Node.js 22+ to run properly.
+  </Card>
+  <Card title="MongoDB" icon="database">
+    **Version 4.0 or higher recommended**
+    
+    Local installation or MongoDB Atlas cloud instance.
+  </Card>
+  <Card title="npm" icon="box">
+    **Comes with Node.js**
+    
+    Package manager for installing dependencies.
+  </Card>
+  <Card title="Git" icon="git-alt">
+    **For cloning the repository**
+    
+    Version control system.
+  </Card>
+</CardGroup>
+
+<Warning>
+Node.js version 22 or higher is mandatory. The application will not run correctly on older versions.
+</Warning>
+
+## Verify your Node.js version
+
+Check your current Node.js version:
+
+```bash
+node --version
+```
+
+You should see output like `v22.0.0` or higher. If your version is lower, download the latest version from [nodejs.org](https://nodejs.org).
+
+## Installation steps
+
+<Steps>
+  <Step title="Clone the repository">
+    Get the source code from GitHub:
+    
+    ```bash
+    git clone https://github.com/GitRepoFabi/coderhouse-backendIII.git
+    cd coderhouse-backendIII
+    ```
+    
+    Or clone to a specific directory:
+    
+    ```bash
+    git clone https://github.com/GitRepoFabi/coderhouse-backendIII.git adoptme-api
+    cd adoptme-api
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    Install all required npm packages from `package.json`:
+    
+    ```bash
+    npm install
+    ```
+    
+    ### Core dependencies
+    
+    The following packages will be installed (from `package.json:15-27`):
+    
+    **Production dependencies:**
+    - `express@^4.18.2` - Web application framework
+    - `mongoose@^6.7.5` - MongoDB object modeling
+    - `jsonwebtoken@^8.5.1` - JWT token generation and verification
+    - `bcrypt@^5.1.0` - Password hashing
+    - `dotenv@^17.2.2` - Environment variable management
+    - `cookie-parser@^1.4.6` - Parse cookies in requests
+    - `multer@^1.4.5-lts.1` - Multipart/form-data file uploads
+    - `swagger-jsdoc@^6.2.8` - OpenAPI specification generation
+    - `swagger-ui-express@^5.0.1` - Swagger UI middleware
+    - `@faker-js/faker@^9.9.0` - Generate realistic mock data
+    - `supertest@^6.3.3` - HTTP assertion testing
+    
+    **Development dependencies:**
+    - `mocha@^10.1.0` - Test framework
+    - `chai@^4.3.7` - Assertion library
+  </Step>
+
+  <Step title="Set up MongoDB">
+    You have two options for MongoDB:
+    
+    <Tabs>
+      <Tab title="Local MongoDB">
+        Install MongoDB locally:
+        
+        **Ubuntu/Debian:**
+        ```bash
+        sudo apt-get update
+        sudo apt-get install -y mongodb-org
+        sudo systemctl start mongod
+        sudo systemctl enable mongod
+        ```
+        
+        **macOS (Homebrew):**
+        ```bash
+        brew tap mongodb/brew
+        brew install mongodb-community
+        brew services start mongodb-community
+        ```
+        
+        **Windows:**
+        Download the installer from [mongodb.com](https://www.mongodb.com/try/download/community) and follow the installation wizard.
+        
+        Verify MongoDB is running:
+        ```bash
+        mongosh
+        ```
+      </Tab>
+      
+      <Tab title="MongoDB Atlas (Cloud)">
+        1. Create a free account at [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
+        2. Create a new cluster
+        3. Set up database access (username and password)
+        4. Whitelist your IP address (or use 0.0.0.0/0 for development)
+        5. Get your connection string (looks like `mongodb+srv://...`)
+        
+        <Note>
+        MongoDB Atlas provides 512MB of free storage, perfect for development and testing.
+        </Note>
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Configure environment variables">
+    Create a `.env` file in the root directory of the project. The API reads configuration from `src/config/config.js:1-9`:
+    
+    ```bash .env
+    PORT=8080
+    MONGO_URL=mongodb://127.0.0.1:27017
+    DB_NAME=adoptme
+    ```
+    
+    ### Configuration details
+    
+    <ParamField path="PORT" type="number" default="8080">
+      The port where the Express server will listen for requests.
+    </ParamField>
+    
+    <ParamField path="MONGO_URL" type="string" default="mongodb://127.0.0.1:27017">
+      MongoDB connection URL. For local instances, use `mongodb://127.0.0.1:27017`. For MongoDB Atlas, use your connection string.
+    </ParamField>
+    
+    <ParamField path="DB_NAME" type="string" default="adoptme">
+      The name of the MongoDB database. The application connects to this database on startup (see `src/app.js:17`).
+    </ParamField>
+    
+    ### Example configurations
+    
+    <CodeGroup>
+    ```bash Local development
+    PORT=8080
+    MONGO_URL=mongodb://127.0.0.1:27017
+    DB_NAME=adoptme
+    ```
+    
+    ```bash MongoDB Atlas
+    PORT=8080
+    MONGO_URL=mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/
+    DB_NAME=adoptme
+    ```
+    
+    ```bash Docker
+    PORT=3000
+    MONGO_URL=mongodb://mongo:27017
+    DB_NAME=adoptme
+    ```
+    
+    ```bash Production
+    PORT=8080
+    MONGO_URL=mongodb+srv://prod_user:secure_password@production-cluster.mongodb.net/
+    DB_NAME=adoptme_production
+    ```
+    </CodeGroup>
+    
+    <Warning>
+    Never commit your `.env` file to version control. It's already included in `.gitignore`.
+    </Warning>
+  </Step>
+
+  <Step title="Start the application">
+    Run the API server:
+    
+    <CodeGroup>
+    ```bash Production mode
+    npm start
+    ```
+    
+    ```bash Development mode (auto-reload)
+    npm run dev
+    ```
+    </CodeGroup>
+    
+    The scripts are defined in `package.json:8-10`:
+    - `npm start` runs `node src/app.js`
+    - `npm run dev` runs `nodemon src/app.js` for automatic reloading
+    
+    ### Expected output
+    
+    If everything is configured correctly, you should see:
+    
+    ```
+    Connection successful MongoDB
+    Listening on 8080
+    ```
+    
+    This indicates:
+    - MongoDB connection established successfully (from `src/app.js:18`)
+    - Express server is listening on the configured port (from `src/app.js:48`)
+  </Step>
+</Steps>
+
+## Verify your installation
+
+After installation, verify that everything is working correctly:
+
+<Steps>
+  <Step title="Check server health">
+    Open your browser or use curl to test the server:
+    
+    ```bash
+    curl http://localhost:8080/api/users
+    ```
+    
+    You should receive a JSON response:
+    ```json
+    {
+      "status": "success",
+      "payload": []
+    }
+    ```
+  </Step>
+
+  <Step title="Access Swagger documentation">
+    Open your browser and navigate to:
+    
+    ```
+    http://localhost:8080/docs
+    ```
+    
+    You should see the interactive Swagger UI with all API endpoints (configured in `src/app.js:24-36`).
+  </Step>
+
+  <Step title="Run tests">
+    Execute the test suite to verify functionality:
+    
+    ```bash
+    npm test
+    ```
+    
+    This runs the Mocha tests from the `test/` directory (`package.json:10`).
+  </Step>
+
+  <Step title="Create test data">
+    Generate mock data to verify database operations:
+    
+    ```bash
+    curl -X POST "http://localhost:8080/api/mocks/generateData?user=2&pet=5"
+    ```
+    
+    This creates 2 users and 5 pets in your database.
+  </Step>
+</Steps>
+
+## Database collections
+
+The Adoptme API uses three main MongoDB collections:
+
+<CardGroup cols={3}>
+  <Card title="Users" icon="user">
+    **Schema** (from `src/dao/models/User.js:5-38`):
+    - `first_name` (string, required)
+    - `last_name` (string, required)
+    - `email` (string, required, unique)
+    - `password` (string, required, hashed)
+    - `role` (string, default: 'user')
+    - `pets` (array of pet IDs)
+  </Card>
+  
+  <Card title="Pets" icon="paw">
+    **Schema** (from `src/dao/models/Pet.js:5-24`):
+    - `name` (string, required)
+    - `specie` (string, required)
+    - `birthDate` (date)
+    - `adopted` (boolean, default: false)
+    - `owner` (ObjectId reference to Users)
+    - `image` (string)
+  </Card>
+  
+  <Card title="Adoptions" icon="heart">
+    **Schema** (from `src/dao/models/Adoption.js`):
+    - `owner` (ObjectId reference to Users)
+    - `pet` (ObjectId reference to Pets)
+    - Timestamps (createdAt, updatedAt)
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="MongoDB connection error">
+    **Error**: `Connection failed MongoDB`
+    
+    **Solutions**:
+    1. Verify MongoDB is running:
+       ```bash
+       sudo systemctl status mongod  # Linux
+       brew services list            # macOS
+       ```
+    
+    2. Check your `MONGO_URL` in `.env`
+    
+    3. For MongoDB Atlas, ensure:
+       - Your IP is whitelisted
+       - Username and password are correct
+       - Connection string includes credentials
+    
+    4. Test MongoDB connection directly:
+       ```bash
+       mongosh "mongodb://127.0.0.1:27017"
+       ```
+  </Accordion>
+
+  <Accordion title="Port already in use">
+    **Error**: `EADDRINUSE: address already in use :::8080`
+    
+    **Solutions**:
+    1. Change the port in your `.env` file:
+       ```bash
+       PORT=3000
+       ```
+    
+    2. Or kill the process using the port:
+       ```bash
+       # Find the process
+       lsof -i :8080
+       
+       # Kill it
+       kill -9 <PID>
+       ```
+  </Accordion>
+
+  <Accordion title="Module not found errors">
+    **Error**: `Cannot find module 'express'`
+    
+    **Solution**: Reinstall dependencies:
+    ```bash
+    rm -rf node_modules package-lock.json
+    npm install
+    ```
+  </Accordion>
+
+  <Accordion title="Wrong Node.js version">
+    **Error**: Application crashes or unexpected behavior
+    
+    **Solution**: Use Node Version Manager (nvm):
+    ```bash
+    # Install nvm
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+    
+    # Install Node.js 22
+    nvm install 22
+    nvm use 22
+    
+    # Verify
+    node --version
+    ```
+  </Accordion>
+
+  <Accordion title="Environment variables not loading">
+    **Error**: Using default values instead of `.env` configuration
+    
+    **Solutions**:
+    1. Ensure `.env` is in the project root directory
+    2. Verify file is named exactly `.env` (not `.env.txt`)
+    3. Restart the server after changing `.env`
+    4. Check file permissions:
+       ```bash
+       chmod 644 .env
+       ```
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart guide" icon="rocket" href="/quickstart">
+    Make your first API requests and explore the endpoints.
+  </Card>
+  <Card title="API reference" icon="book" href="/api/authentication/register">
+    Complete documentation of all available endpoints.
+  </Card>
+  <Card title="Docker deployment" icon="docker" href="/guides/docker-deployment">
+    Learn how to containerize and deploy the API.
+  </Card>
+  <Card title="Testing" icon="flask" href="/guides/testing">
+    Run unit tests with `npm test` to ensure everything works.
+  </Card>
+</CardGroup>
+
+## Docker installation
+
+<Tip>
+For production deployments, consider using Docker for consistent environments.
+</Tip>
+
+The project includes a `Dockerfile` for containerized deployment:
+
+```bash
+# Build the Docker image
+docker build -t adoptme-api:1.0.0 .
+
+# Run the container
+docker run -d \
+  -p 8080:8080 \
+  -e PORT=8080 \
+  -e MONGO_URL=mongodb://host.docker.internal:27017 \
+  -e DB_NAME=adoptme \
+  --name adoptme \
+  adoptme-api:1.0.0
+```
+
+For more details on Docker deployment, see the [README.md](https://github.com/GitRepoFabi/coderhouse-backendIII#readme) in the source repository.

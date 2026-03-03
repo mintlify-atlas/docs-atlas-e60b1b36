@@ -1,0 +1,109 @@
+---
+title: "Login"
+description: "Authenticate a user and receive a JWT token"
+---
+
+## POST /api/sessions/login
+
+Authenticates a user with email and password, returning a JWT token in a cookie.
+
+### Request Body
+
+<ParamField body="email" type="string" required>
+  User's email address
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  User's password
+</ParamField>
+
+### Response
+
+On successful authentication, a JWT token is set as a cookie named `coderCookie` with a 1-hour expiration.
+
+<ResponseField name="status" type="string">
+  Status of the request ("success" or "error")
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  "Logged in" on successful authentication
+</ResponseField>
+
+### JWT Token Contents
+
+The JWT token contains the following user information:
+
+<ResponseField name="name" type="string">
+  User's full name (first_name + last_name)
+</ResponseField>
+
+<ResponseField name="role" type="string">
+  User's role in the system
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  User's email address
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="status" type="string">
+  "error"
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error message:
+  - "Incomplete values" - Missing email or password (400)
+  - "User doesn't exist" - Email not found (404)
+  - "Incorrect password" - Password validation failed (400)
+  - Server error message (500)
+</ResponseField>
+
+### Example Request
+
+```bash cURL
+curl -X POST https://api.adoptme.com/api/sessions/login \
+  -H "Content-Type: application/json" \
+  -c cookies.txt \
+  -d '{
+    "email": "john.doe@example.com",
+    "password": "securePassword123"
+  }'
+```
+
+### Example Response
+
+```json Success (200)
+{
+  "status": "success",
+  "message": "Logged in"
+}
+```
+
+```json Error - Incomplete Values (400)
+{
+  "status": "error",
+  "error": "Incomplete values"
+}
+```
+
+```json Error - User Not Found (404)
+{
+  "status": "error",
+  "error": "User doesn't exist"
+}
+```
+
+```json Error - Incorrect Password (400)
+{
+  "status": "error",
+  "error": "Incorrect password"
+}
+```
+
+### Cookie Details
+
+- **Cookie Name**: `coderCookie`
+- **Max Age**: 3600000ms (1 hour)
+- **Token Type**: JWT (JSON Web Token)
+- **Token Expiration**: 1 hour

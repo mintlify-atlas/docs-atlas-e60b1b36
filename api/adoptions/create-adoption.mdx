@@ -1,0 +1,142 @@
+---
+title: 'Create Adoption'
+api: 'POST /api/adoptions/:uid/:pid'
+description: 'Create a new adoption by linking a user with a pet'
+---
+
+## Overview
+
+This endpoint creates a new adoption record by linking a user (identified by `uid`) with a pet (identified by `pid`). When an adoption is created, the following operations occur:
+
+1. Validates that both the user and pet exist
+2. Checks that the pet is not already adopted
+3. Adds the pet to the user's pets array
+4. Marks the pet as adopted and sets the owner
+5. Creates an adoption record
+
+## Endpoint
+
+```
+POST /api/adoptions/:uid/:pid
+```
+
+## Path Parameters
+
+<ParamField path="uid" type="string" required>
+  The unique identifier of the user who is adopting the pet.
+</ParamField>
+
+<ParamField path="pid" type="string" required>
+  The unique identifier of the pet to be adopted.
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string" required>
+  Status of the response. Returns "success" when the adoption is successfully created.
+</ResponseField>
+
+<ResponseField name="message" type="string" required>
+  Confirmation message. Returns "Pet adopted" on success.
+</ResponseField>
+
+## Example Request
+
+<CodeGroup>
+
+```bash cURL
+curl --location --request POST 'http://localhost:8080/api/adoptions/507f191e810c19729de860ea/507f191e810c19729de860eb' \
+--header 'Content-Type: application/json'
+```
+
+```javascript JavaScript
+const userId = '507f191e810c19729de860ea';
+const petId = '507f191e810c19729de860eb';
+
+fetch(`http://localhost:8080/api/adoptions/${userId}/${petId}`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+```python Python
+import requests
+
+user_id = "507f191e810c19729de860ea"
+pet_id = "507f191e810c19729de860eb"
+url = f"http://localhost:8080/api/adoptions/{user_id}/{pet_id}"
+headers = {"Content-Type": "application/json"}
+
+response = requests.post(url, headers=headers)
+print(response.json())
+```
+
+</CodeGroup>
+
+## Example Response
+
+### Success Response
+
+```json
+{
+  "status": "success",
+  "message": "Pet adopted"
+}
+```
+
+## Error Responses
+
+### 404 User Not Found
+
+Returned when the user with the specified `uid` does not exist.
+
+```json
+{
+  "status": "error",
+  "error": "user Not found"
+}
+```
+
+### 404 Pet Not Found
+
+Returned when the pet with the specified `pid` does not exist.
+
+```json
+{
+  "status": "error",
+  "error": "Pet not found"
+}
+```
+
+### 400 Pet Already Adopted
+
+Returned when the pet has already been adopted by another user.
+
+```json
+{
+  "status": "error",
+  "error": "Pet is already adopted"
+}
+```
+
+### 500 Internal Server Error
+
+Returned when a server error occurs during the request.
+
+```json
+{
+  "message": "Ha ocurrido un error en la petición, por favor ver detalle: [error details]"
+}
+```
+
+## Implementation Details
+
+When a successful adoption is created, the system performs the following updates:
+
+- **User record**: The pet's ID is added to the user's `pets` array
+- **Pet record**: The `adopted` field is set to `true` and the `owner` field is set to the user's ID
+- **Adoption record**: A new adoption document is created with references to both the user and pet

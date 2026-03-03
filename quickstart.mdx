@@ -1,80 +1,266 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get the Adoptme API running locally in just a few minutes
 ---
 
-## Get started in three steps
+## Prerequisites
 
-Get your documentation site running locally and make your first customization.
+Before you begin, ensure you have the following installed:
 
-### Step 1: Set up your local environment
+- Node.js version 22 or higher
+- MongoDB (local or cloud instance)
+- Git
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+<Note>
+To check your Node.js version, run `node --version` in your terminal. If you need to upgrade, visit [nodejs.org](https://nodejs.org).
+</Note>
+
+## Get up and running
+
+<Steps>
+  <Step title="Clone the repository">
+    Clone the Adoptme API repository to your local machine:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    ```bash
+    git clone https://github.com/GitRepoFabi/coderhouse-backendIII.git
+    cd coderhouse-backendIII
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    Install all required npm packages:
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    ```bash
+    npm install
+    ```
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    This will install:
+    - express - Web framework
+    - mongoose - MongoDB object modeling
+    - jsonwebtoken - JWT authentication
+    - bcrypt - Password hashing
+    - dotenv - Environment variable management
+    - multer - File upload handling
+    - swagger-jsdoc & swagger-ui-express - API documentation
+    - @faker-js/faker - Mock data generation
+  </Step>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+  <Step title="Configure environment variables">
+    Create a `.env` file in the root directory with the following variables:
+    
+    ```bash
+    PORT=8080
+    MONGO_URL=mongodb://127.0.0.1:27017
+    DB_NAME=adoptme
+    ```
+    
+    <Info>
+    **Default values**: If you don't provide these variables, the API will use the defaults shown above (from `src/config/config.js:5-8`).
+    </Info>
+    
+    For a cloud MongoDB instance (e.g., MongoDB Atlas), use your connection string:
+    
+    ```bash
+    MONGO_URL=mongodb+srv://username:password@cluster.mongodb.net/
+    ```
+  </Step>
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+  <Step title="Start the server">
+    Start the development server:
+    
+    <CodeGroup>
+    ```bash Production
+    npm start
+    ```
+    
+    ```bash Development (with auto-reload)
+    npm run dev
+    ```
+    </CodeGroup>
+    
+    You should see:
+    ```
+    Connection successful MongoDB
+    Listening on 8080
+    ```
+  </Step>
+</Steps>
 
-### Step 3: Go live
+## Make your first API request
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+Now that your server is running, let's make your first API call.
+
+<Steps>
+  <Step title="Register a new user">
+    Create a user account using the registration endpoint:
+    
+    ```bash
+    curl -X POST http://localhost:8080/api/sessions/register \
+      -H "Content-Type: application/json" \
+      -d '{
+        "first_name": "John",
+        "last_name": "Doe",
+        "email": "john.doe@example.com",
+        "password": "securePassword123"
+      }'
+    ```
+    
+    **Response** (from `src/controllers/sessions.controller.js`):
+    ```json
+    {
+      "status": "success",
+      "payload": "66abc123def456789"
+    }
+    ```
+  </Step>
+
+  <Step title="Create a pet">
+    Add a pet to the system:
+    
+    ```bash
+    curl -X POST http://localhost:8080/api/pets \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Max",
+        "specie": "dog",
+        "birthDate": "2020-05-15"
+      }'
+    ```
+    
+    **Response** (from `src/controllers/pets.controller.js:5-21`):
+    ```json
+    {
+      "status": "success",
+      "payload": {
+        "_id": "66def789abc123456",
+        "name": "Max",
+        "specie": "dog",
+        "birthDate": "2020-05-15T00:00:00.000Z",
+        "adopted": false,
+        "image": ""
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Get all pets">
+    Retrieve the list of all pets:
+    
+    ```bash
+    curl http://localhost:8080/api/pets
+    ```
+    
+    **Response** (from `src/controllers/pets.controller.js:5-12`):
+    ```json
+    {
+      "status": "success",
+      "payload": [
+        {
+          "_id": "66def789abc123456",
+          "name": "Max",
+          "specie": "dog",
+          "birthDate": "2020-05-15T00:00:00.000Z",
+          "adopted": false
+        }
+      ]
+    }
+    ```
+  </Step>
+
+  <Step title="Create an adoption">
+    Connect a user with a pet:
+    
+    ```bash
+    curl -X POST http://localhost:8080/api/adoptions/{userId}/{petId}
+    ```
+    
+    Replace `{userId}` and `{petId}` with actual IDs from previous responses.
+    
+    **Response** (from `src/controllers/adoptions.controller.js:23-38`):
+    ```json
+    {
+      "status": "success",
+      "message": "Pet adopted"
+    }
+    ```
+    
+    <Info>
+    The adoption process automatically:
+    - Updates the pet's `adopted` status to `true`
+    - Adds the pet to the user's `pets` array
+    - Creates an adoption record
+    - Sets the pet's `owner` field
+    </Info>
+  </Step>
+</Steps>
+
+## Explore the API
+
+<CardGroup cols={2}>
+  <Card title="Interactive documentation" icon="book-open" href="http://localhost:8080/docs">
+    Access the Swagger UI at `http://localhost:8080/docs` for interactive API exploration.
+  </Card>
+  <Card title="Generate test data" icon="flask">
+    Use the `/api/mocks/generateData` endpoint to create mock users and pets for testing.
+  </Card>
+</CardGroup>
+
+### Generate mock data
+
+Quickly populate your database with test data:
+
+```bash
+curl -X POST "http://localhost:8080/api/mocks/generateData?user=5&pet=10"
+```
+
+This creates 5 users and 10 pets using realistic data from Faker.js.
+
+<Tip>
+The mock data generator is perfect for testing and development. See the implementation in `src/mocks/mocks.js`.
+</Tip>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Installation guide" icon="gear" href="/installation">
+    Learn about detailed setup, MongoDB configuration, and verification steps.
+  </Card>
+  <Card title="API reference" icon="code" href="/api/authentication/register">
+    Complete documentation of all endpoints.
+  </Card>
+  <Card title="Run tests" icon="vial" href="/guides/testing">
+    Execute the test suite with `npm test` to verify your installation.
+  </Card>
+  <Card title="Docker deployment" icon="docker" href="/guides/docker-deployment">
+    Deploy using Docker for consistent environments.
+  </Card>
 </CardGroup>
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+## Common issues
+
+<AccordionGroup>
+  <Accordion title="Connection refused to MongoDB">
+    Ensure MongoDB is running:
+    ```bash
+    # Check MongoDB status
+    sudo systemctl status mongod
+    
+    # Start MongoDB
+    sudo systemctl start mongod
+    ```
+    Or verify your `MONGO_URL` is correct if using a cloud instance.
+  </Accordion>
+
+  <Accordion title="Port already in use">
+    If port 8080 is occupied, change the `PORT` variable in your `.env` file:
+    ```bash
+    PORT=3000
+    ```
+  </Accordion>
+
+  <Accordion title="Incomplete values error">
+    Ensure you're sending all required fields:
+    - **Users**: `first_name`, `last_name`, `email`, `password` (from `src/dao/models/User.js:5-22`)
+    - **Pets**: `name`, `specie`, `birthDate` (from `src/controllers/pets.controller.js:16-17`)
+  </Accordion>
+</AccordionGroup>

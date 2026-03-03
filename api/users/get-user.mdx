@@ -1,0 +1,128 @@
+---
+title: "Get User"
+api: "GET /api/users/:uid"
+description: "Retrieve a specific user by their ID"
+---
+
+## Endpoint
+
+```
+GET /api/users/:uid
+```
+
+Retrieves a single user by their unique identifier.
+
+## Path Parameters
+
+<ParamField path="uid" type="string" required>
+  The unique identifier of the user to retrieve
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  Status of the request. Returns `"success"` on successful retrieval or `"error"` on failure.
+</ResponseField>
+
+<ResponseField name="payload" type="object">
+  The user object (only present on success).
+  
+  <Expandable title="User Object">
+    <ResponseField name="_id" type="string">
+      Unique identifier for the user
+    </ResponseField>
+    
+    <ResponseField name="first_name" type="string">
+      User's first name
+    </ResponseField>
+    
+    <ResponseField name="last_name" type="string">
+      User's last name
+    </ResponseField>
+    
+    <ResponseField name="email" type="string">
+      User's email address (unique)
+    </ResponseField>
+    
+    <ResponseField name="password" type="string">
+      User's hashed password
+    </ResponseField>
+    
+    <ResponseField name="role" type="string" default="user">
+      User's role in the system
+    </ResponseField>
+    
+    <ResponseField name="pets" type="array" default="[]">
+      Array of pet references associated with the user
+      
+      <Expandable title="Pet Reference">
+        <ResponseField name="_id" type="string">
+          Reference to a Pet document ID
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error message (only present on failure)
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X GET https://api.adoptme.com/api/users/507f1f77bcf86cd799439011
+```
+
+## Example Response
+
+<ResponseExample>
+```json Success Response
+{
+  "status": "success",
+  "payload": {
+    "_id": "507f1f77bcf86cd799439011",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john.doe@example.com",
+    "password": "$2b$10$...",
+    "role": "user",
+    "pets": [
+      {
+        "_id": "507f191e810c19729de860ea"
+      }
+    ]
+  }
+}
+```
+
+```json 404 Not Found
+{
+  "status": "error",
+  "error": "User not found"
+}
+```
+
+```json 500 Server Error
+{
+  "error": "Ha ocurrido un error en la petición, por favor ver detalle: [error details]"
+}
+```
+</ResponseExample>
+
+## Error Responses
+
+<ResponseField name="404" type="Not Found">
+  Returns when the user with the specified ID does not exist.
+  
+  ```json
+  {
+    "status": "error",
+    "error": "User not found"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500" type="Internal Server Error">
+  Returns an error message when the request fails due to a server error.
+</ResponseField>

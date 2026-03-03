@@ -1,0 +1,208 @@
+---
+title: 'Docker Deployment'
+description: 'Deploy the Adoptme API using Docker and Docker Hub'
+icon: 'docker'
+---
+
+## Docker Configuration
+
+The Adoptme API includes a Dockerfile for containerized deployment. This allows you to package the application with all its dependencies and run it consistently across different environments.
+
+### Dockerfile
+
+The project uses the following Dockerfile:
+
+```dockerfile Dockerfile
+FROM node:20.11.0
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY ./src ./src
+
+EXPOSE 3000
+
+CMD ["npm","start"]
+```
+
+<Note>
+  The Dockerfile uses Node.js version 20.11.0 as the base image and exposes port 3000 for the application.
+</Note>
+
+## Building the Docker Image
+
+<Steps>
+  <Step title="Navigate to Project Directory">
+    Open a terminal and navigate to the root directory of the project where the Dockerfile is located.
+  </Step>
+
+  <Step title="Build the Image">
+    Execute the following command to build the Docker image:
+
+    ```bash
+    docker build -t DOCKER_USERNAME/serverxxxx:1.0.0 .
+    ```
+
+    Replace `DOCKER_USERNAME` with your Docker Hub username and `serverxxxx` with your desired image name.
+
+    Example:
+    ```bash
+    docker build -t fabil2025/serverentregafinal:1.0.0 .
+    ```
+  </Step>
+
+  <Step title="Verify Image Creation">
+    Check that the image was created successfully by opening Docker Desktop or running:
+
+    ```bash
+    docker images
+    ```
+
+    You should see your newly created image in the list.
+  </Step>
+</Steps>
+
+## Pushing to Docker Hub
+
+<Steps>
+  <Step title="Login to Docker Hub">
+    If you haven't already, login to Docker Hub:
+
+    ```bash
+    docker login
+    ```
+
+    Enter your Docker Hub credentials when prompted.
+  </Step>
+
+  <Step title="Push the Image">
+    Upload your image to Docker Hub:
+
+    ```bash
+    docker push DOCKER_USERNAME/serverxxxx
+    ```
+
+    Example:
+    ```bash
+    docker push fabil2025/serverentregafinal:1.0.0
+    ```
+
+    <Note>
+      The push command will upload all layers of your image to Docker Hub, making it available for deployment anywhere.
+    </Note>
+  </Step>
+</Steps>
+
+## Running the Container
+
+<Steps>
+  <Step title="Pull the Image">
+    Download the image from Docker Hub:
+
+    ```bash
+    docker pull DOCKER_USERNAME/serverxxxx:1.0.0
+    ```
+
+    Example:
+    ```bash
+    docker pull fabil2025/serverentregafinal:1.0.0
+    ```
+
+    Alternatively, visit your Docker Hub repository page at `https://hub.docker.com/r/DOCKER_USERNAME/serverxxxx` and download the image from there.
+  </Step>
+
+  <Step title="Configure Environment Variables">
+    The application requires environment variables to run properly. You must configure:
+
+    ```bash
+    PORT=3000
+    MONGO_URL=mongodb://your-mongo-host:27017
+    DB_NAME=adoptme
+    ```
+
+    <Warning>
+      The `MONGO_URL` and `DB_NAME` variables are **critical**. If not provided, the application will fail to start because it connects to the database at initialization.
+    </Warning>
+  </Step>
+
+  <Step title="Run the Container">
+    **Option 1: Using Docker Desktop**
+
+    1. Click the Play button next to your image in Docker Desktop
+    2. In the configuration screen, set:
+       - **Container Name**: Choose a descriptive name
+       - **Ports**: Map a host port to container port 3000 (e.g., `8080:3000`)
+       - **Environment Variables**: Add the three required variables
+
+    **Option 2: Using Command Line**
+
+    ```bash
+    docker run -d \
+      --name adoptme-api \
+      -p 8080:3000 \
+      -e PORT=3000 \
+      -e MONGO_URL=mongodb://your-mongo-host:27017 \
+      -e DB_NAME=adoptme \
+      DOCKER_USERNAME/serverxxxx:1.0.0
+    ```
+
+    This command:
+    - Runs the container in detached mode (`-d`)
+    - Names the container `adoptme-api`
+    - Maps port 8080 on your host to port 3000 in the container
+    - Sets the required environment variables
+  </Step>
+
+  <Step title="Verify the Deployment">
+    Test the API by making a request to one of the endpoints:
+
+    ```bash
+    curl http://localhost:8080/api/pets
+    ```
+
+    Or use Postman/Insomnia to test the endpoints. If everything is configured correctly, you should receive a successful response.
+  </Step>
+</Steps>
+
+## Port Configuration
+
+The Dockerfile exposes port 3000, but you can map it to any available port on your host machine:
+
+| Host Port | Container Port | Example |
+|-----------|----------------|----------|
+| 8080 | 3000 | `-p 8080:3000` |
+| 3000 | 3000 | `-p 3000:3000` |
+| 80 | 3000 | `-p 80:3000` |
+
+<Note>
+  Make sure the `PORT` environment variable matches the internal container port (3000), while the external port can be any available port on your host.
+</Note>
+
+## Troubleshooting
+
+### Container Fails to Start
+
+If the container exits immediately after starting:
+
+1. Check the container logs:
+   ```bash
+   docker logs container-name
+   ```
+
+2. Verify environment variables are set correctly
+3. Ensure MongoDB is accessible from the container
+
+### Database Connection Issues
+
+If you see MongoDB connection errors:
+
+- Verify the `MONGO_URL` is correct and accessible
+- Check that MongoDB is running
+- Ensure network connectivity between the container and MongoDB
+- Use `host.docker.internal` instead of `localhost` if MongoDB is running on your host machine:
+  ```bash
+  MONGO_URL=mongodb://host.docker.internal:27017
+  ```

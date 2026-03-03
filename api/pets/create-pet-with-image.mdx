@@ -1,0 +1,120 @@
+---
+title: 'Create Pet with Image'
+api: 'POST /api/pets/withimage'
+description: 'Create a new pet with an image upload'
+---
+
+This endpoint creates a new pet with an image file. The request must be sent as `multipart/form-data` to support file uploads. The image is processed using Multer middleware and stored in the server's public directory.
+
+## Request Body (multipart/form-data)
+
+<ParamField name="name" type="string" required>
+  Name of the pet
+</ParamField>
+
+<ParamField name="specie" type="string" required>
+  Species of the pet (e.g., dog, cat, bird, rabbit)
+</ParamField>
+
+<ParamField name="birthDate" type="string" required>
+  Birth date of the pet. Can be in ISO 8601 format or other standard date formats.
+</ParamField>
+
+<ParamField name="image" type="file" required>
+  Image file of the pet. The file will be stored with a timestamp prefix to ensure uniqueness.
+</ParamField>
+
+## Multer Configuration
+
+The endpoint uses Multer for handling file uploads with the following configuration:
+
+- **Storage**: Disk storage in `/public/img` directory
+- **Filename format**: `{timestamp}-{originalname}`
+- **Field name**: `image` (single file)
+
+## Response
+
+<ResponseField name="status" type="string" required>
+  Status of the response. Returns "success" on successful creation.
+</ResponseField>
+
+<ResponseField name="payload" type="object" required>
+  The created pet object with image information.
+  
+  <ResponseField name="_id" type="string">
+    Unique identifier for the newly created pet
+  </ResponseField>
+  
+  <ResponseField name="name" type="string">
+    Name of the pet
+  </ResponseField>
+  
+  <ResponseField name="specie" type="string">
+    Species of the pet
+  </ResponseField>
+  
+  <ResponseField name="birthDate" type="string">
+    Birth date of the pet in ISO 8601 format
+  </ResponseField>
+  
+  <ResponseField name="adopted" type="boolean">
+    Adoption status (default: false)
+  </ResponseField>
+  
+  <ResponseField name="image" type="string">
+    Server path to the uploaded image file
+  </ResponseField>
+</ResponseField>
+
+## Example Request
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:8080/api/pets/withimage \
+  --header 'Content-Type: multipart/form-data' \
+  --form 'name=Charlie' \
+  --form 'specie=cat' \
+  --form 'birthDate=2021-06-10' \
+  --form 'image=@/path/to/pet-photo.jpg'
+```
+
+## Example Response
+
+```json
+{
+  "status": "success",
+  "payload": {
+    "_id": "507f1f77bcf86cd799439014",
+    "name": "Charlie",
+    "specie": "cat",
+    "birthDate": "2021-06-10T00:00:00.000Z",
+    "adopted": false,
+    "image": "/public/img/1709481234567-pet-photo.jpg"
+  }
+}
+```
+
+## Error Responses
+
+### Missing Required Fields (400)
+
+```json
+{
+  "status": "error",
+  "error": "Incomplete values"
+}
+```
+
+### Server Error (500)
+
+```json
+{
+  "error": "Ha ocurrido un error en la petición, por favor ver detalle: [error details]"
+}
+```
+
+## Notes
+
+- The uploaded image filename will be prefixed with a timestamp (e.g., `1709481234567-original-filename.jpg`)
+- Images are stored in the server's `/public/img` directory
+- The image path returned includes the full server path to the file

@@ -1,0 +1,85 @@
+---
+title: "Register User"
+description: "Create a new user account"
+---
+
+## POST /api/sessions/register
+
+Creates a new user account with the provided details. Passwords are securely hashed before storage.
+
+### Request Body
+
+<ParamField body="first_name" type="string" required>
+  User's first name
+</ParamField>
+
+<ParamField body="last_name" type="string" required>
+  User's last name
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  User's email address (must be unique)
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  User's password (will be hashed)
+</ParamField>
+
+### Response
+
+<ResponseField name="status" type="string">
+  Status of the request ("success" or "error")
+</ResponseField>
+
+<ResponseField name="payload" type="string">
+  The ID of the newly created user
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="status" type="string">
+  "error"
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error message:
+  - "Incomplete values" - Missing required fields (400)
+  - "User already exists" - Email is already registered (400)
+  - Server error message (500)
+</ResponseField>
+
+### Example Request
+
+```bash cURL
+curl -X POST https://api.adoptme.com/api/sessions/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john.doe@example.com",
+    "password": "securePassword123"
+  }'
+```
+
+### Example Response
+
+```json Success (200)
+{
+  "status": "success",
+  "payload": "507f1f77bcf86cd799439011"
+}
+```
+
+```json Error - Incomplete Values (400)
+{
+  "status": "error",
+  "error": "Incomplete values"
+}
+```
+
+```json Error - User Exists (400)
+{
+  "status": "error",
+  "error": "User already exists"
+}
+```

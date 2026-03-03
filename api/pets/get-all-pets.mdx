@@ -1,0 +1,92 @@
+---
+title: 'Get All Pets'
+api: 'GET /api/pets'
+description: 'Retrieve a list of all pets in the system'
+---
+
+This endpoint returns all pets registered in the database, including their details such as name, species, birth date, adoption status, and associated images.
+
+## Response
+
+<ResponseField name="status" type="string" required>
+  Status of the response. Returns "success" on successful retrieval.
+</ResponseField>
+
+<ResponseField name="payload" type="array" required>
+  Array of pet objects.
+  
+  <ResponseField name="_id" type="string">
+    Unique identifier for the pet
+  </ResponseField>
+  
+  <ResponseField name="name" type="string">
+    Name of the pet
+  </ResponseField>
+  
+  <ResponseField name="specie" type="string">
+    Species of the pet (e.g., dog, cat, bird)
+  </ResponseField>
+  
+  <ResponseField name="birthDate" type="string">
+    Birth date of the pet in ISO 8601 format
+  </ResponseField>
+  
+  <ResponseField name="adopted" type="boolean">
+    Indicates whether the pet has been adopted (default: false)
+  </ResponseField>
+  
+  <ResponseField name="owner" type="string">
+    User ID of the pet's owner (if adopted)
+  </ResponseField>
+  
+  <ResponseField name="image" type="string">
+    Path to the pet's image file
+  </ResponseField>
+</ResponseField>
+
+## Example Request
+
+```bash cURL
+curl --request GET \
+  --url http://localhost:8080/api/pets \
+  --header 'Content-Type: application/json'
+```
+
+## Example Response
+
+```json
+{
+  "status": "success",
+  "payload": [
+    {
+      "_id": "507f1f77bcf86cd799439011",
+      "name": "Max",
+      "specie": "dog",
+      "birthDate": "2020-05-15T00:00:00.000Z",
+      "adopted": false,
+      "image": "/public/img/1234567890-max.jpg"
+    },
+    {
+      "_id": "507f1f77bcf86cd799439012",
+      "name": "Luna",
+      "specie": "cat",
+      "birthDate": "2021-03-22T00:00:00.000Z",
+      "adopted": true,
+      "owner": "507f1f77bcf86cd799439099",
+      "image": "/public/img/1234567891-luna.jpg"
+    }
+  ]
+}
+```
+
+## Error Responses
+
+<ResponseField name="status" type="number">
+  HTTP status code 500 for server errors
+</ResponseField>
+
+```json
+{
+  "error": "Ha ocurrido un error en la petición, por favor ver detalle: [error details]"
+}
+```

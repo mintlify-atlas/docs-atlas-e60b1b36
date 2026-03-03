@@ -1,0 +1,98 @@
+---
+title: 'Create Pet'
+api: 'POST /api/pets'
+description: 'Create a new pet in the system'
+---
+
+This endpoint creates a new pet with the provided information. All fields (name, specie, birthDate) are required.
+
+## Request Body
+
+<ParamField name="name" type="string" required>
+  Name of the pet
+</ParamField>
+
+<ParamField name="specie" type="string" required>
+  Species of the pet (e.g., dog, cat, bird, rabbit)
+</ParamField>
+
+<ParamField name="birthDate" type="string" required>
+  Birth date of the pet. Can be in ISO 8601 format or other standard date formats.
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string" required>
+  Status of the response. Returns "success" on successful creation.
+</ResponseField>
+
+<ResponseField name="payload" type="object" required>
+  The created pet object.
+  
+  <ResponseField name="_id" type="string">
+    Unique identifier for the newly created pet
+  </ResponseField>
+  
+  <ResponseField name="name" type="string">
+    Name of the pet
+  </ResponseField>
+  
+  <ResponseField name="specie" type="string">
+    Species of the pet
+  </ResponseField>
+  
+  <ResponseField name="birthDate" type="string">
+    Birth date of the pet in ISO 8601 format
+  </ResponseField>
+  
+  <ResponseField name="adopted" type="boolean">
+    Adoption status (default: false)
+  </ResponseField>
+</ResponseField>
+
+## Example Request
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:8080/api/pets \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "name": "Buddy",
+    "specie": "dog",
+    "birthDate": "2022-01-15"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "status": "success",
+  "payload": {
+    "_id": "507f1f77bcf86cd799439013",
+    "name": "Buddy",
+    "specie": "dog",
+    "birthDate": "2022-01-15T00:00:00.000Z",
+    "adopted": false
+  }
+}
+```
+
+## Error Responses
+
+### Missing Required Fields (400)
+
+```json
+{
+  "status": "error",
+  "error": "Incomplete values"
+}
+```
+
+### Server Error (500)
+
+```json
+{
+  "error": "Ha ocurrido un error en la petición, por favor ver detalle: [error details]"
+}
+```

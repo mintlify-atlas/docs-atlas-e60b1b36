@@ -1,0 +1,168 @@
+---
+title: Introduction
+description: A RESTful API for managing pet adoptions, connecting pets with loving owners through a modern backend service
+---
+
+<img
+  className="block dark:hidden"
+  src="/images/hero-light.svg"
+  alt="Adoptme API Hero Light"
+/>
+<img
+  className="hidden dark:block"
+  src="/images/hero-dark.svg"
+  alt="Adoptme API Hero Dark"
+/>
+
+## Welcome to Adoptme API
+
+Adoptme is a comprehensive backend API designed to facilitate pet adoption management. Built with Express.js and MongoDB, it provides a robust platform for managing users, pets, and adoption records with authentication, file uploads, and comprehensive documentation.
+
+## Core features
+
+<CardGroup cols={2}>
+  <Card
+    title="User management"
+    icon="users"
+    href="/api/users/get-all-users"
+  >
+    Complete user system with registration, authentication, and profile management. Supports role-based access control.
+  </Card>
+  <Card
+    title="Pet management"
+    icon="paw"
+    href="/api/pets/get-all-pets"
+  >
+    Full CRUD operations for pets including species, birth dates, adoption status, and image uploads for pet profiles.
+  </Card>
+  <Card
+    title="Adoption system"
+    icon="heart"
+    href="/api/adoptions/create-adoption"
+  >
+    Track adoption relationships between users and pets with automatic status updates and owner assignment.
+  </Card>
+  <Card
+    title="Mock data generation"
+    icon="database"
+    href="/api/mocks/generate-data"
+  >
+    Generate realistic test data using Faker.js for development and testing environments.
+  </Card>
+  <Card
+    title="Authentication"
+    icon="shield"
+    href="/api/authentication/register"
+  >
+    Secure JWT-based authentication with bcrypt password hashing. Supports session management and protected routes.
+  </Card>
+  <Card
+    title="API documentation"
+    icon="book"
+    href="/quickstart"
+  >
+    Interactive Swagger/OpenAPI documentation available at /docs endpoint for easy API exploration.
+  </Card>
+  <Card
+    title="Pet management"
+    icon="paw"
+    href="/api/pets/get-all-pets"
+  >
+    Full CRUD operations for pets including species, birth dates, adoption status, and image uploads for pet profiles.
+  </Card>
+  <Card
+    title="Adoption system"
+    icon="heart"
+    href="/api/adoptions/create-adoption"
+  >
+    Track adoption relationships between users and pets with automatic status updates and owner assignment.
+  </Card>
+  <Card
+    title="Mock data generation"
+    icon="database"
+    href="/api/mocks/generate-data"
+  >
+    Generate realistic test data using Faker.js for development and testing environments.
+  </Card>
+  <Card
+    title="Authentication"
+    icon="lock"
+    href="/api/authentication/register"
+  >
+    Secure JWT-based authentication with bcrypt password hashing and cookie-based session management.
+  </Card>
+  <Card
+    title="API documentation"
+    icon="book"
+    href="/quickstart"
+  >
+    Interactive Swagger/OpenAPI documentation available at /docs endpoint for easy API exploration.
+  </Card>
+</CardGroup>
+
+## Technology stack
+
+Adoptme API is built with modern, production-ready technologies:
+
+- **Express.js** - Fast, minimalist web framework
+- **MongoDB** - Flexible NoSQL database with Mongoose ODM
+- **JWT** - Secure token-based authentication
+- **bcrypt** - Password hashing and encryption
+- **Multer** - File upload handling for pet images
+- **Swagger** - Interactive API documentation
+- **Docker** - Containerized deployment support
+
+## Get started
+
+<CardGroup cols={2}>
+  <Card
+    title="Quickstart guide"
+    icon="rocket"
+    href="/quickstart"
+  >
+    Get your API up and running in minutes with our step-by-step quickstart guide.
+  </Card>
+  <Card
+    title="Installation"
+    icon="download"
+    href="/installation"
+  >
+    Detailed installation instructions including dependencies, environment setup, and verification.
+  </Card>
+  <Card
+    title="API reference"
+    icon="code"
+    href="/api/authentication/register"
+  >
+    Explore all available endpoints with request/response examples and parameters.
+  </Card>
+  <Card
+    title="Testing"
+    icon="terminal"
+    href="/guides/testing"
+  >
+    Learn about running tests, Docker deployment, and contributing to the project.
+  </Card>
+</CardGroup>
+
+## API overview
+
+The Adoptme API is organized around REST principles with predictable resource-oriented URLs:
+
+- **Base URL**: `http://localhost:8080` (configurable via PORT environment variable)
+- **Authentication**: JWT tokens via cookies
+- **Response format**: JSON
+- **HTTP methods**: GET, POST, PUT, DELETE
+
+### Main endpoints
+
+- `/api/users` - User management and profiles
+- `/api/pets` - Pet listings and management
+- `/api/adoptions` - Adoption creation and tracking
+- `/api/sessions` - Authentication and authorization
+- `/api/mocks` - Test data generation
+- `/docs` - Interactive Swagger documentation
+
+<Tip>
+The API includes Swagger UI documentation at `/docs` for interactive API exploration and testing.
+</Tip>

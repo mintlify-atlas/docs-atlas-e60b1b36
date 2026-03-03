@@ -1,0 +1,217 @@
+---
+title: 'Testing'
+description: 'Test the Adoptme API using Mocha, Chai, and Supertest'
+icon: 'flask'
+---
+
+## Testing Setup
+
+The Adoptme API uses a comprehensive testing stack to ensure reliability and correctness:
+
+- **Mocha**: Test framework for organizing and running tests
+- **Chai**: Assertion library for writing test expectations
+- **Supertest**: HTTP assertion library for testing API endpoints
+
+## Running Tests
+
+Execute the test suite with the following command:
+
+```bash
+npm test
+```
+
+This command runs all tests located in the `test/` directory using the configuration defined in `package.json`:
+
+```json package.json
+{
+  "scripts": {
+    "test": "mocha test/supertest.test.js --exit"
+  }
+}
+```
+
+<Note>
+  The `--exit` flag ensures Mocha exits after all tests complete, which is important for CI/CD pipelines.
+</Note>
+
+## Test Configuration
+
+The test file imports the necessary dependencies and establishes a database connection:
+
+```javascript test/supertest.test.js
+import { describe, it } from "mocha";
+import supertest from "supertest";
+import { expect } from "chai";
+import config from "../src/config/config.js";
+import mongoose, { isValidObjectId } from "mongoose";
+
+const requester = supertest(`http://localhost:${config.PORT}`);
+
+await mongoose.connect(config.MONGO_URL, { dbName: config.DB_NAME });
+```
+
+<Warning>
+  Ensure the API server is running on the configured port before executing tests. The tests make HTTP requests to `http://localhost:${config.PORT}`.
+</Warning>
+
+## Test Suites
+
+### Pets Router Tests
+
+Tests for the `/api/pets` endpoint with a 10-second timeout:
+
+#### Get All Pets
+
+```javascript
+it("Si consulto todas las mascotas al endpoint /api/pets metodo GET, me debería devolver un array de mascotas", async() => {
+    let {body} = await requester.get("/api/pets").send();
+    expect(Array(body.payload));
+});
+```
+
+#### Create Pet - Success Case
+
+```javascript
+it("Si envío los datos correctos de una mascota al /api/pets metodo POST, da de alta la mascota en DB", async() => {
+    let petMock = {
+        name: "Rocky", 
+        specie: "test", 
+        birthDate: new Date(2025, 11, 18).toUTCString()
+    };
+
+    let {status, body} = await requester.post("/api/pets").send(petMock);
+    expect(status).to.be.eq(200);
+    expect(body.payload).to.has.property("_id");
+    expect(isValidObjectId(body.payload._id)).to.be.true;
+});
+```
+
+#### Create Pet - Validation Errors
+
+<CodeGroup>
+
+```javascript Missing Name
+it("Si envío los datos de la mascota sin el campo name al /api/pets metodo POST, me debería dar un error", async() => {
+    let petMock = {
+        //name: "Rocky", 
+        specie: "test", 
+        birthDate: new Date(2025, 11, 18).toUTCString()
+    };
+
+    let {status} = await requester.post("/api/pets").send(petMock);
+    expect(status).to.be.eq(400);
+});
+```
+
+```javascript Missing Specie
+it("Si envío los datos de la mascota sin el campo specie al /api/pets metodo POST, me debería dar un error", async() => {
+    let petMock = {
+        name: "Rocky", 
+        //specie: "test", 
+        birthDate: new Date(2025, 11, 18).toUTCString()
+    };
+
+    let {status} = await requester.post("/api/pets").send(petMock);
+    expect(status).to.be.eq(400);
+});
+```
+
+```javascript Missing BirthDate
+it("Si envío los datos de la mascota sin el campo birthDate al /api/pets metodo POST, me debería dar un error", async() => {
+    let petMock = {
+        name: "Rocky", 
+        specie: "test", 
+        //birthDate: new Date(2025, 11, 18).toUTCString()
+    };
+
+    let {status} = await requester.post("/api/pets").send(petMock);
+    expect(status).to.be.eq(400);
+});
+```
+
+</CodeGroup>
+
+### Users Router Tests
+
+Tests for the `/api/users` and `/api/mocks/generateData` endpoints:
+
+#### Get All Users
+
+```javascript
+it("Si consulto todos los usuarios al endpoint /api/users metodo GET, me debería devolver un array de usuarios", async() => {
+    let {body} = await requester.get("/api/users").send();
+    expect(Array(body.payload));
+});
+```
+
+#### Generate Mock Data - Default
+
+```javascript
+it("Si quiero generar 1 usuario y 1 mascota, al apuntar al endpoint /api/mocks/generateData metodo POST sin pasarle cantidad, da de alta 1 usuario y 1 mascota en DB", async() => {
+    let {status, body} = await requester.post(`/api/mocks/generateData`).send();
+    expect(status).to.be.eq(201);
+    expect(Array(body));
+    expect(body.message).to.be.eq("Datos generados exitosamente");
+});
+```
+
+#### Generate Mock Data - Custom Amount
+
+```javascript
+it("Si quiero generar N usuarios y N mascotas, al apuntar al endpoint /api/mocks/generateData metodo POST pasándole la cantidad deseada, da de alta los N usuarios y las N mascotas en DB", async() => {
+    let usuarios = 3;
+    let mascotas = 3;
+
+    let {status, body} = await requester.post(`/api/mocks/generateData/?user=${usuarios}&pets=${mascotas}`).send();
+    expect(status).to.be.eq(201);
+    expect(Array(body));
+    expect(body.message).to.be.eq("Datos generados exitosamente");
+});
+```
+
+#### Generate Mock Data - Validation
+
+<CodeGroup>
+
+```javascript Negative User Count
+it("Si al apuntar al endpoint /api/mocks/generateData metodo POST le paso una cantidad negativa en el parámetro para generar un usuario, debe de dar error", async() => {
+    let user = -1;
+    let {status} = await requester.post(`/api/mocks/generateData/?user=${user}`).send();
+    expect(status).to.be.eq(400);
+});
+```
+
+```javascript Negative Pet Count
+it("Si al apuntar al endpoint /api/mocks/generateData metodo POST le paso una cantidad negativa en el parámetro para generar una mascota, debe de dar error", async() => {
+    let pet = -1;
+    let {status} = await requester.post(`/api/mocks/generateData/?pet=${pet}`).send();
+    expect(status).to.be.eq(400);
+});
+```
+
+</CodeGroup>
+
+## Test Cleanup
+
+The pets test suite includes an `after` hook to clean up test data:
+
+```javascript
+after(async() => {
+    await mongoose.connection.collection("pets").deleteMany({specie: "test"});
+});
+```
+
+<Note>
+  Test pets are created with `specie: "test"` to facilitate cleanup after tests complete.
+</Note>
+
+## Test Timeout
+
+Both test suites use a 10-second timeout to accommodate database operations:
+
+```javascript
+describe("Pruebas router pets", function() {
+    this.timeout(10_000); // 10,000 ms = 10 seconds
+    // ... tests
+});
+```

@@ -1,0 +1,118 @@
+---
+title: "Update User"
+api: "PUT /api/users/:uid"
+description: "Update a user's information"
+---
+
+## Endpoint
+
+```
+PUT /api/users/:uid
+```
+
+Updates an existing user's information.
+
+## Path Parameters
+
+<ParamField path="uid" type="string" required>
+  The unique identifier of the user to update
+</ParamField>
+
+## Request Body
+
+<ParamField body="first_name" type="string">
+  User's first name
+</ParamField>
+
+<ParamField body="last_name" type="string">
+  User's last name
+</ParamField>
+
+<ParamField body="email" type="string">
+  User's email address (must be unique)
+</ParamField>
+
+<ParamField body="password" type="string">
+  User's password
+</ParamField>
+
+<ParamField body="role" type="string">
+  User's role in the system
+</ParamField>
+
+<ParamField body="pets" type="array">
+  Array of pet references to associate with the user
+  
+  <Expandable title="Pet Reference">
+    <ParamField body="_id" type="string">
+      Reference to a Pet document ID
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  Status of the request. Returns `"success"` on successful update or `"error"` on failure.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message (only present on success)
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error message (only present on failure)
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X PUT https://api.adoptme.com/api/users/507f1f77bcf86cd799439011 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "first_name": "John",
+    "last_name": "Smith",
+    "email": "john.smith@example.com"
+  }'
+```
+
+## Example Response
+
+<ResponseExample>
+```json Success Response
+{
+  "status": "success",
+  "message": "User updated"
+}
+```
+
+```json 404 Not Found
+{
+  "status": "error",
+  "error": "User not found"
+}
+```
+
+```json 500 Server Error
+{
+  "error": "Ha ocurrido un error en la petición, por favor ver detalle: [error details]"
+}
+```
+</ResponseExample>
+
+## Error Responses
+
+<ResponseField name="404" type="Not Found">
+  Returns when the user with the specified ID does not exist.
+  
+  ```json
+  {
+    "status": "error",
+    "error": "User not found"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500" type="Internal Server Error">
+  Returns an error message when the request fails due to a server error. This can occur due to database errors or validation issues.
+</ResponseField>

@@ -1,0 +1,80 @@
+---
+title: "Delete User"
+api: "DELETE /api/users/:uid"
+description: "Delete a user from the system"
+---
+
+## Endpoint
+
+```
+DELETE /api/users/:uid
+```
+
+Deletes a user from the Adoptme system.
+
+## Path Parameters
+
+<ParamField path="uid" type="string" required>
+  The unique identifier of the user to delete
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  Status of the request. Returns `"success"` on successful deletion or `"error"` on failure.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message (only present on success)
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error message (only present on failure)
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X DELETE https://api.adoptme.com/api/users/507f1f77bcf86cd799439011
+```
+
+## Example Response
+
+<ResponseExample>
+```json Success Response
+{
+  "status": "success",
+  "message": "User deleted"
+}
+```
+
+```json 404 Not Found
+{
+  "status": "error",
+  "error": "User not found"
+}
+```
+
+```json 500 Server Error
+{
+  "error": "Ha ocurrido un error en la petición, por favor ver detalle: [error details]"
+}
+```
+</ResponseExample>
+
+## Error Responses
+
+<ResponseField name="404" type="Not Found">
+  Returns when the user with the specified ID does not exist.
+  
+  ```json
+  {
+    "status": "error",
+    "error": "User not found"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500" type="Internal Server Error">
+  Returns an error message when the request fails due to a server error. This can occur due to database errors or issues during the deletion process.
+</ResponseField>

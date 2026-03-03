@@ -1,0 +1,89 @@
+---
+title: 'Update Pet'
+api: 'PUT /api/pets/:pid'
+description: "Update an existing pet's information"
+---
+
+This endpoint updates an existing pet's information. You can update any of the pet's fields including name, species, birth date, adoption status, owner, and image.
+
+## Path Parameters
+
+<ParamField name="pid" type="string" required>
+  The unique identifier (ID) of the pet to update
+</ParamField>
+
+## Request Body
+
+You can include any of the following fields to update:
+
+<ParamField name="name" type="string">
+  Updated name of the pet
+</ParamField>
+
+<ParamField name="specie" type="string">
+  Updated species of the pet
+</ParamField>
+
+<ParamField name="birthDate" type="string">
+  Updated birth date of the pet
+</ParamField>
+
+<ParamField name="adopted" type="boolean">
+  Updated adoption status
+</ParamField>
+
+<ParamField name="owner" type="string">
+  User ID of the new owner
+</ParamField>
+
+<ParamField name="image" type="string">
+  Updated image path
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string" required>
+  Status of the response. Returns "success" on successful update.
+</ResponseField>
+
+<ResponseField name="message" type="string" required>
+  Confirmation message. Returns "pet updated".
+</ResponseField>
+
+## Example Request
+
+```bash cURL
+curl --request PUT \
+  --url http://localhost:8080/api/pets/507f1f77bcf86cd799439011 \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "name": "Max Updated",
+    "adopted": true,
+    "owner": "507f1f77bcf86cd799439099"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "status": "success",
+  "message": "pet updated"
+}
+```
+
+## Error Responses
+
+### Server Error (500)
+
+```json
+{
+  "error": "Ha ocurrido un error en la petición, por favor ver detalle: [error details]"
+}
+```
+
+## Notes
+
+- You only need to include the fields you want to update in the request body
+- All fields are optional - the endpoint will only update the fields provided
+- The pet ID in the URL path must match an existing pet in the database
